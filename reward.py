@@ -25,27 +25,30 @@ with open('example (2).json') as f:
     events = json.load(f)
 
 customers = []
-orders = []
+rewards = []
 order_cnts = []
 for event in events["events"]:
     if event["action"] == "new_customer" and event["name"] not in customers:
         customers.append(event["name"])
 order_cnts = [0] * len(customers)
-orders = [0] * len(customers)
+rewards = [0] * len(customers)
 for event in events["events"]:
     if event["action"] == "new_order" and event["customer"] in customers:
         # get index of customer
         index = customers.index(event["customer"])
-        orders[index] += calc_reward(event["amount"], event["timestamp"])
+        rewards[index] += calc_reward(event["amount"], event["timestamp"])
         order_cnts[index] += 1
 
-orders = [round(x) for x in orders]
+rewards = [round(x) for x in rewards]
 
 
-index_list = np.argsort(-np.array(orders))
+index_list = np.argsort(-np.array(rewards))
 for index in index_list:
     try:
-        average = orders[index]/order_cnts[index]
+        average = rewards[index]/order_cnts[index]
     except ZeroDivisionError:
         average = 0
-    print(customers[index] + " : " + str(orders[index]) + " points with " + str(average) + " points per order")
+    if order_cnts[index] == 0:
+        print(customers[index] + " : No orders")
+    else:
+        print(customers[index] + " : " + str(rewards[index]) + " points with " + str(average) + " points per order")
